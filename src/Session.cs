@@ -64,7 +64,7 @@ namespace Amqp
         /// </summary>
         /// <param name="connection">The connection within which to create the session.</param>
         public Session(Connection connection)
-            : this(connection, Default(connection), null)
+            : this(connection, null, null)
         {
         }
 
@@ -78,6 +78,12 @@ namespace Amqp
         {
             this.connection = connection;
             this.onBegin = onBegin;
+
+            if (begin == null)
+            {
+                begin = Default(connection);
+            }
+
             this.handleMax = begin.HandleMax;
             this.nextOutgoingId = begin.NextOutgoingId;
             this.incomingWindow = begin.IncomingWindow;
@@ -419,7 +425,7 @@ namespace Amqp
                 int count = this.remoteLinks.Length;
                 if (count - 1 < remoteHandle)
                 {
-                    int size = (int)Math.Min(count * 2 - 1, this.handleMax) + 1;
+                    int size = (int)Math.Min(Math.Max(count * 2 - 1, remoteHandle + 1), this.handleMax) + 1;
                     Link[] expanded = new Link[size];
                     Array.Copy(this.remoteLinks, expanded, count);
                     this.remoteLinks = expanded;
